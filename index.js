@@ -1,4 +1,6 @@
 import express from 'express';
+import favicon from 'serve-favicon';
+import path from 'path';
 import data from './data/data.json';
 
 const app = express();
@@ -10,7 +12,11 @@ app.use(express.static('public'));
 // app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// This is for proxies
+app.set('trust proxy', 'loopback');
+
 app.use('/images', express.static('images'));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 app.get('/', (req, res) =>
     res.json(data)
@@ -48,7 +54,8 @@ app.put('/item', (req, res) =>
 
 app.route('/item')
     .get((req, res) =>
-        res.send(`a get request with /item route on port ${PORT}`)
+        {throw new Error()}
+        // res.send(`a get request with /item route on port ${PORT}`)
     )
     .put((req, res) =>
         res.send(`a put request with /newIrem route on port ${PORT}`)
@@ -57,16 +64,18 @@ app.route('/item')
         res.send(`a delete request with /item route on port ${PORT}`)
     );
 
-// app.get('/item', (req, res) =>
-//     res.send(`a get request with /item route on port ${PORT}`)
-// );
-
 app.delete('/item', (req, res) =>
     res.send(`a delete request with /item route on port ${PORT}`)
 );
 
+// Error handling function
+app.use((err, req, res, next) => {
+    console.log(err.stack);
+    res.status(500).send(`Red alert! Red alert!: ${err.stack}`);
+})
+
 app.listen(PORT, () => {
     console.log(`Your server is running on port ${PORT}`);
-    console.log(data);
+    // console.log(data);
 });
 
